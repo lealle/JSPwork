@@ -39,7 +39,10 @@ body {
 <h2>투표프로그램</h2>
 <hr>
 <h5>설문폼</h5>
-<p><button type="button">투표</button>&emsp;&emsp;<button>결과</button></p>
+<jsp:include page="voteForm.jsp"/>
+
+
+
 <hr>
 <h5>설문리스트</h5>
 <table class="table">
@@ -62,7 +65,7 @@ body {
 		String edate = vlist.getEdate();
 		out.print("<tr>");
 		out.print("<td>"+(alist.size()-i)+"</td>");
-		out.print("<td>"+question+"</td>");
+		out.print("<td><a href='voteList.jsp?num="+num+"'>"+question+"</a></td>");
 		out.print("<td>"+sdate+" ~ "+edate +"</td>");
 		out.print("</tr>");		
 	}

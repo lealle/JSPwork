@@ -122,9 +122,9 @@ public class VoteDao {
 		try {
 			con = pool.getConnection();
 			if(num == 0)
-				sql="select * from votelist order by num";
+				sql="select * from votelist order by num desc";
 			else
-				sql="select * from votelist where id = "+num;
+				sql="select * from votelist where num = "+num;
 			
 			rs = con.createStatement().executeQuery(sql);
 			if(rs.next()) {				
@@ -166,9 +166,88 @@ public class VoteDao {
 		return alist;
 	}
 		
+	public boolean updateCount(int listnum, String[] itemnum) {
+		boolean flag = false;
+		try {
+			con = pool.getConnection();
+			sql="update voteitem set count = count+1 where listnum =? and itemnum=? " ;
+			pstmt = con.prepareStatement(sql);
+			if(listnum == 0)
+				listnum = getMaxNum();
+			
+			for(int i=0; i<itemnum.length; i++) {
+				if(itemnum[i]==null|| itemnum[i].equals("")) 
+					break;
+				
+				pstmt.setInt(1, listnum);
+				pstmt.setInt(2, Integer.parseInt(itemnum[i]));
+				int result = pstmt.executeUpdate();
+				// select 제외 executeUpdate 사용 (delete update 등등...
+				if(result > 0)
+					flag = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			pool.freeConnection(con);
+		}
+		return flag;
+	}
 
-
-
+	// listnum의 전체 count가져오기
+	public int sumCount(int num) {
+		int count = 0;
+		try {
+			con = pool.getConnection();
+			sql="select sum(count) from voteitem where listnum = ?";
+			pstmt = con.prepareStatement(sql);
+			if(num == 0)
+				num = getMaxNum();
+			
+			pstmt.setInt(1, num);
+			rs = pstmt.executeQuery();
+			if(rs.next())
+				count = rs.getInt(1);
+			
+			
+			// sql="select (sum)count from voteitem where listnum = " + num;
+			// count = Integer.parseInt(rs.getString(1)); 으로 할 수 있는지 테스트 해보기-> 더 짧게 할 수 있다 함 
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			pool.freeConnection(con);
+		}
+		
+		return count;
+	}
+	// listnum의 각각의 item과 count 가져오기
+	public ArrayList<VoteItem> getItemCount(int num) {
+		ArrayList<VoteItem> alist = new ArrayList<>();
+		try {
+			con = pool.getConnection();
+			if(num == 0)
+				sql="select item, count from voteitem where listnum = " + getMaxNum();
+			else
+				sql="select item, count from voteitem where listnum = "+num;
+			
+			rs = con.createStatement().executeQuery(sql);
+			while(rs.next()) {
+				VoteItem vitem = new VoteItem();
+				String item[] = new String[1];
+				item[0] = rs.getString(1);
+				vitem.setItem(item);
+				vitem.setCount(rs.getInt(2));
+				alist.add(vitem);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			pool.freeConnection(con);
+		}
+		
+		return alist;
+	}
 
 
 
