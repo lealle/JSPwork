@@ -4,6 +4,7 @@
 <jsp:useBean id="bDao" class="board.BoardDao"/>
 <!DOCTYPE html>
 <%
+// Paging 기법 DB를 이용한것이 아닌 자바스크립트 및 자바로 처리 
 	ArrayList<Board> board = new ArrayList<>();
 	String keyWord ="";
 	String keyField ="";
@@ -31,10 +32,13 @@
 		nowBlock =Integer.parseInt(request.getParameter("nowBlock"));
 	}
 	int blockSize = (int)Math.ceil((double)nowBlock / 5);
-	
+	if(request.getParameter("BlockSize") !=null){
+		blockSize =Integer.parseInt(request.getParameter("blockSize"));
+
+	}
+	// 현재 있는 블록집합구분 1~5 , 6~10, ...
 	int curList = listSum - (10*(nowBlock-1)) - 1;
 	// DB에서 start 번호까지 10개 가져오기 
-	// listSize 현재 읽어온 레코드 수 
 	
 %>
 <!-- 부트스트랩 -->
@@ -50,12 +54,27 @@
 		document.readFrm.num.value = num;
 		// document.readFrm.action = "read.jsp"; // script 에서 action 지정 가능 
 		document.readFrm.submit();
-		
 	}
 	
 	function set(num){
 		document.blockFrm.nowBlock.value = num;
 		document.blockFrm.submit();
+	}
+	
+	function setblockSize(num,flag){
+		if(num <= document.sizeFrm.totalBlock.value && num > 0){
+			document.sizeFrm.blockSize.value = num;			
+			document.sizeFrm.nowBlock.value = (num-1)*5+1;
+		}else if(flag == 0){
+			document.sizeFrm.blockSize.value = num+1;						
+			document.sizeFrm.nowBlock.value = (num)*5+1;
+		}
+		else{
+			document.sizeFrm.blockSize.value = num-1;						
+			document.sizeFrm.nowBlock.value = (num-2)*5+1;
+		}
+		
+		document.sizeFrm.submit();
 		
 	}
 </script>
@@ -67,10 +86,12 @@
 </head>
 <body>
 	<div class="list">
+		<h1><%=totalBlock %> / <%=blockSize %></h1>
 		<h2 class="m30">JSPBoard</h2>
 		<table class="table m30">
 		<tr>
-			<td colspan=5 class="right-align">Total : <%=listSum %></td>
+			<td colspan=5 class="right-align">Total : <%=listSum %>Articles(<font color="red"><%=nowBlock %>/<%=totalPage %>Pages</font>)</td>
+
 		</tr>
 		<tr>
 			<th width="12%">번호</th>
@@ -90,7 +111,7 @@
 				out.print(			
 					board.get(curList - i).getSubject()+"</a></td><td>"
 					+board.get(curList - i).getName()+"</td><td>"
-					+board.get(curList - i).getRegdate()+"</td><td>"
+					+board.get(curList - i).getRegdate().substring(0,10)+"</td><td>"
 					+board.get(curList - i).getCount()  );
 			out.print("</td></tr>");
 			if((curList-i) == 0)
@@ -105,17 +126,29 @@
 				<td colspan=3 class="cen">
 				<%
 					for(int i=5*(blockSize-1); i<5*blockSize; i++){
-						
 						%>
 						<a href="javascript:set(<%=i+1%>)">[<%=i +1 %>]</a> 
-						
 						<%
-						if(blockSize+i == totalPage ){
+						if(i+1 == totalPage ){
 							break;
 						}
 					}
 				%>
-				
+				<!-- 왜 자체 코드로 안하고 DB를 사용하는건지 알겠음 동기화를 시켜줘야하는 과정이 껄끄러움 (위의 식이 존재하더라도 값이 변경될때 그 과정을 한번 더 하지는 않음 ) -->
+				<% 
+					if(totalPage != 1) {
+						if(blockSize > 1) {
+				%>
+							<a href = "javascript:setblockSize(<%=blockSize-1 %>,0)">prev...</a>&ensp;
+				<%			
+						} 
+						if(totalBlock > blockSize) {
+				%>
+							<a href = "javascript:setblockSize(<%=blockSize+1%>,1)">...next</a>
+				<%		
+						}
+					} // if(totalPage != 1) end
+				%>
 				</td>
 				<td colspan=2 class="right-align">
 					<a href = "write.jsp">[글쓰기]</a>&emsp;
@@ -151,13 +184,31 @@
 	</form>
 	
 	
-	<form name="blockFrm" >
+	<form name="blockFrm" action = "list.jsp">
 		<input type="hidden" name="nowBlock">
+		<%
+			if(!(keyWord == null || keyWord.equals(""))){
+		%>
+				<input type="hidden" name="keyField" value="<%=keyField %>">
+				<input type="hidden" name="keyWord" value="<%=keyWord %>">
+		<%
+			}
+		%>
 	</form>
 	
-	
-	
-	
+	<form name="sizeFrm">
+		<input type="hidden" name="blockSize">
+		<input type="hidden" name="nowBlock">
+		<input type="hidden" name="totalBlock" value="<%=totalBlock%>">
+		<%
+			if(!(keyWord == null || keyWord.equals(""))){
+		%>
+				<input type="hidden" name="keyField" value="<%=keyField %>">
+				<input type="hidden" name="keyWord" value="<%=keyWord %>">
+		<%
+			}
+		%>
+	</form>
 	
 	
 	

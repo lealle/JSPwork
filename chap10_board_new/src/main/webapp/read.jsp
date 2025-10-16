@@ -95,9 +95,9 @@ a{
 </div>
 	<hr>
 	<p class="cen">[
-	<a href="list.jsp`">리스트 </a> |
+	<a href="list.jsp?nowPage=<%=nowPage%>">리스트</a> | 
 	<a href="update.jsp?num=<%=num%>&nowPage=<%=nowPage%>">수 정 </a> |
-	<a href="">답 변 </a> |
+	<a href="reply.jsp?nowPage=<%=nowPage%>">답 변 </a> |
 	<a href="delete.jsp?num=<%=num%>&nowPage=<%=nowPage%>">삭 제</a>
 	<!-- 띄어쓰기하면 안됨 (퍼센트 안쪽은 가능) -->
 	]
