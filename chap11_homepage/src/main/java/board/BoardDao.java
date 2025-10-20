@@ -2,9 +2,13 @@ package board;
 
 import java.sql.*;
 import java.util.ArrayList;
-import db.DBConnectionMgr;
 
 public class BoardDao {
+//	public static void main(String[] args) {
+//	new BoardDao.insert();
+//	}
+	
+	
 	private DBConnectionMgr pool = DBConnectionMgr.getInstance();
 	Connection con;
 	PreparedStatement pstmt;
@@ -133,6 +137,26 @@ public class BoardDao {
 		}
 	}
 	
+	public int deleteBoard(int num) {
+		int result = 0;
+		try {
+			con = pool.getConnection();
+			sql = "select count(*) from board where ref="+num;
+			rs = con.createStatement().executeQuery(sql);
+			
+			if(rs.next()) {
+				if(rs.getInt(1) <= 1) {
+					sql = "delete board where num="+num;
+					result = con.createStatement().executeUpdate(sql);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			pool.freeConnection(con);
+		}
+		return result;
+	}
 	// 게시글쓰기
 	public int insertBoard(Board board) {
 		int result = 0;
@@ -154,83 +178,94 @@ public class BoardDao {
 		return result;
 	}
 	
-	
-
-
-	
-
-	// 답변 위치값 증가
-	public void replyUpPos(int ref, int pos) {
+	public int getNextNum() {
+		int num = 0;
 		try {
 			con = pool.getConnection();
-			sql = "update board set pos = pos+1 where ref=? and pos > ?";
-			pstmt = con.prepareStatement(sql);
-			pstmt.setInt(1, ref);
-			pstmt.setInt(2, pos);
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			pool.freeConnection(con);
-		}
-	}
-	
-	// 댓글 등록
-	public void replyBoard(Board bean) {
-		try {
-			con = pool.getConnection();
-			sql = "insert into board values(SEQ_BOARD.NEXTVAL,?,?,?,?,?,?,SYSDATE,?,?,DEFAULT)";
-			
-			int pos = bean.getPos() + 1;
-			int depth = bean.getDepth() + 1;
-			
-			pstmt = con.prepareStatement(sql);
-			pstmt.setString(1, bean.getName());
-			pstmt.setString(2, bean.getSubject());
-			pstmt.setString(3, bean.getContent());
-			pstmt.setInt(4, pos);
-			pstmt.setInt(5, bean.getRef());
-			pstmt.setInt(6, depth);
-			pstmt.setString(7, bean.getPass());
-			pstmt.setString(8, bean.getIp());
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			pool.freeConnection(con);
-		}
-	}
-	
-	// board 삭제
-	public int deleteBoard(int num) {
-		int result = 0;
-		try {
-			con = pool.getConnection();
-			sql = "select count(*) from board where ref=" + num;
+			sql="select max(num) from board";
 			rs = con.createStatement().executeQuery(sql);
 			if(rs.next()) {
-				if(rs.getInt(1) <= 1) {
-					sql = "delete from board where num=" + num;
-					result = con.createStatement().executeUpdate(sql);
-				}
+				num = rs.getInt(1) + 1;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			pool.freeConnection(con);
+		}
+		
+		return num;
+	}
+	
+	
+	public void replyBoard(Board board) {
+		try {
+			con = pool.getConnection();
+			
+			sql = "insert into board values(?,?,?,?,?,?,?,SYSDATE,?,?,default,0,0)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, getNextNum()+1);
+			pstmt.setString(2, board.getName());
+			pstmt.setString(3, board.getSubject());
+			pstmt.setString(4, board.getContent());
+			pstmt.setInt(5, board.getPos()+1);
+			pstmt.setInt(6, board.getRef());
+			pstmt.setInt(7, board.getDepth()+1);
+			pstmt.setString(8, board.getPass());
+			pstmt.setString(9, board.getIp());
+			
+			pstmt.executeUpdate();	
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			pool.freeConnection(con);
+		}
+	}
+	
+// ref 가 지정한것보다 큰것이 있을 경우 다 +1 하고 빈 자리 차지
+// depth 는 지정한거 +1 
+// 
+	// 게시물 수정
+		public void updateRef(int ref, int pos) {
+			int result=0; 
+			try {
+				con = pool.getConnection();
+				sql = "update board set pos = pos +1 where ref=? and pos>?";
+				pstmt = con.prepareStatement(sql);
+				pstmt.setInt(1, ref);
+				pstmt.setInt(2, pos);
+				pstmt.executeUpdate();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				pool.freeConnection(con);
+			}
+		}
+		
+	
+	
+	// 
+	public ArrayList<Board> getList2() {
+		ArrayList<Board> alist = new ArrayList<>();	
+		try {
+			con = pool.getConnection();
+			sql = "";
+			rs = con.createStatement().executeQuery(sql);
+			while(rs.next()) {
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			pool.freeConnection(con);
 		}
-		return result;
+		return alist;
 	}
-	
-	/*
-	public static void main(String[] args) {
-		new BoardDao().insert();
-	}
+
 	
 	public void insert() {
 		try {
 			con = pool.getConnection();
-			sql = "insert into board values(?,'이름','제목','내용',0,?,0,sysdate,'1234','0:0:0:0:0:0:0:1',default)";
+			sql = "insert into board(?, '이름', '제목', '내용', 0, ?, 0, sysdate, '1234', null, default, 0, 0) values()";
 			pstmt = con.prepareStatement(sql);
 			for(int i=500; i<650; i++) {
 				pstmt.setInt(1, i);
@@ -243,5 +278,5 @@ public class BoardDao {
 			pool.freeConnection(con);
 		}
 	}
-	*/
+	
 }
