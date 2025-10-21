@@ -142,7 +142,7 @@
              Note: The pattern used is equivalent to using pattern="common" -->
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" pattern="%h %l %u %t &quot;%r&quot; %s %b" prefix="localhost_access_log" suffix=".txt"/>
 
-      <Context docBase="chap09_vote" path="/chap09_vote" reloadable="true" source="org.eclipse.jst.jee.server:chap09_vote"/><Context docBase="chap10_board_new" path="/chap10_board_new" reloadable="true" source="org.eclipse.jst.jee.server:chap10_board_new"/><Context docBase="chap10_boardd" path="/chap10_boardd" reloadable="true" source="org.eclipse.jst.jee.server:chap10_boardd"/><Context docBase="chap12_ajax" path="/chap12_ajax" reloadable="true" source="org.eclipse.jst.jee.server:chap12_ajax"/></Host>
+      <Context docBase="chap09_vote" path="/chap09_vote" reloadable="true" source="org.eclipse.jst.jee.server:chap09_vote"/><Context docBase="chap10_board_new" path="/chap10_board_new" reloadable="true" source="org.eclipse.jst.jee.server:chap10_board_new"/><Context docBase="chap10_boardd" path="/chap10_boardd" reloadable="true" source="org.eclipse.jst.jee.server:chap10_boardd"/><Context docBase="chap12_ajax" path="/chap12_ajax" reloadable="true" source="org.eclipse.jst.jee.server:chap12_ajax"/><Context docBase="chap13_EL_jstl" path="/chap13_EL_jstl" reloadable="true" source="org.eclipse.jst.jee.server:chap13_EL_jstl"/><Context docBase="chap14_homepage2" path="/chap14_homepage2" reloadable="true" source="org.eclipse.jst.jee.server:chap14_homepage2"/></Host>
     </Engine>
   </Service>
 </Server>
